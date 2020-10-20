@@ -15,7 +15,7 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         //
-        $tasks = Task::orderBy('id', 'ASC')->paginate(2); // Devolvemos la consulta con 4 registros
+        $tasks = Task::orderBy('id', 'ASC')->paginate(2); // Devolvemos la consulta con 2 registros
 
         return [
             'pagination' => [
@@ -24,7 +24,7 @@ class TaskController extends Controller
                 'per_page'      => $tasks->perPage(),
                 'last_page'     => $tasks->lastPage(),
                 'from'          => $tasks->firstItem(),
-                'to'            => $tasks->lastPage(),
+                'to'            => $tasks->lastItem(),
             ],
             'tasks' => $tasks
         ];
