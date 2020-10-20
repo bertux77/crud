@@ -49757,15 +49757,69 @@ var app = new Vue({
     this.getKeeps();
   },
   data: {
-    keeps: []
+    keeps: [],
+    newKeep: '',
+    fillKeep: {
+      'id': '',
+      'keep': ''
+    },
+    errors: []
   },
   methods: {
     getKeeps: function getKeeps() {
       var _this = this;
 
+      // TRAE TODOS LOS REGISTROS
       var urlKeeps = 'tasks';
       axios.get(urlKeeps).then(function (response) {
         _this.keeps = response.data;
+      });
+    },
+    editKeep: function editKeep(keep) {
+      // EDITA EL KEEP ( TAREA )
+      this.fillKeep.id = keep.id; // LLenamos el nuevo id
+
+      this.fillKeep.keep = keep.keep; // LLenamos el campo tarea
+
+      $('#edit').modal('show'); // Abrimos el formulario de edicion en ventana modal
+    },
+    updateKeep: function updateKeep(id) {
+      alert();
+    },
+    deleteKeep: function deleteKeep(keep) {
+      var _this2 = this;
+
+      // ELIMINA UN REGISTRO
+      var url = 'tasks/' + keep.id;
+      axios["delete"](url).then(function (response) {
+        // Elimina el registro
+        _this2.getKeeps(); // Actualiza la pantalla
+
+
+        toastr.success('Eliminado Correctamente'); // Notificacion
+      });
+    },
+    createKeep: function createKeep() {
+      var _this3 = this;
+
+      // CREA UN NUEVO REGISTRO
+      var url = 'tasks';
+      axios.post(url, {
+        keep: this.newKeep // Enviamos la peticion
+
+      }).then(function (response) {
+        _this3.getKeeps(); // Actualiza los registros
+
+
+        _this3.newKeep = ''; // Resetea la variable
+
+        _this3.errors = []; // Resetea los errores
+
+        $('#create').modal('hide'); // Cierra la ventana
+
+        toastr.success('Nueva tarea creada con exito'); // Envia mensaje notificando
+      })["catch"](function (error) {
+        _this3.errors = error.response.data;
       });
     }
   }
@@ -49905,8 +49959,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\laragon\www\crud\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\laragon\www\crud\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\Users\yo\Desktop\CRUD\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\Users\yo\Desktop\CRUD\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
