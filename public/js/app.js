@@ -49758,21 +49758,62 @@ var app = new Vue({
   },
   data: {
     keeps: [],
+    pagination: {
+      'total': 0,
+      'current_page': 0,
+      'per_page': 0,
+      'last_page': 0,
+      'from': 0,
+      'to': 0
+    },
     newKeep: '',
     fillKeep: {
       'id': '',
       'keep': ''
     },
-    errors: []
+    errors: [],
+    offset: 3 // numero de paginas a la derecha e izquierda, por ejemplo: 123[4]567sig
+
+  },
+  computed: {
+    isActived: function isActived() {
+      return this.pagination.current_page;
+    },
+    pagesNumber: function pagesNumber() {
+      if (!this.pagination.to) {
+        return [];
+      }
+
+      var from = this.pagination.current_page - this.offset;
+
+      if (from < 1) {
+        from = 1;
+      }
+
+      var to = from + this.offset * 2;
+
+      if (to >= this.pagination.last_page) {
+        to = this.pagination.last_page;
+      }
+
+      var pagesArray = [];
+
+      while (from <= to) {
+        pagesArray.push(from);
+        from++;
+      }
+
+      return pagesArray;
+    }
   },
   methods: {
-    getKeeps: function getKeeps() {
+    getKeeps: function getKeeps(page) {
       var _this = this;
 
       // TRAE TODOS LOS REGISTROS
-      var urlKeeps = 'tasks';
+      var urlKeeps = 'tasks?page=' + page;
       axios.get(urlKeeps).then(function (response) {
-        _this.keeps = response.data;
+        _this.keeps = response.data.tasks.data, _this.pagination = response.data.pagination;
       });
     },
     editKeep: function editKeep(keep) {
@@ -49784,23 +49825,44 @@ var app = new Vue({
       $('#edit').modal('show'); // Abrimos el formulario de edicion en ventana modal
     },
     updateKeep: function updateKeep(id) {
-      alert();
+      var _this2 = this;
+
+      // ACTUALIZAMOS
+      var url = 'tasks/' + id;
+      axios.put(url, this.fillKeep).then(function (response) {
+        // Actualiza el registro en la BD
+        _this2.getKeeps(); // Actualiza la pantalla
+
+
+        _this2.fillKeep = {
+          'id': '',
+          'keep': ''
+        }; // Reinicia el objeto
+
+        _this2.errors = []; // Reiniciamos los errores
+
+        $('#edit').modal('hide'); // Cerramos la ventana Modal
+
+        toastr.success('Tarea Actualizada correctamente');
+      })["catch"](function (error) {
+        _this2.errors = error.response.data;
+      });
     },
     deleteKeep: function deleteKeep(keep) {
-      var _this2 = this;
+      var _this3 = this;
 
       // ELIMINA UN REGISTRO
       var url = 'tasks/' + keep.id;
       axios["delete"](url).then(function (response) {
         // Elimina el registro
-        _this2.getKeeps(); // Actualiza la pantalla
+        _this3.getKeeps(); // Actualiza la pantalla
 
 
         toastr.success('Eliminado Correctamente'); // Notificacion
       });
     },
     createKeep: function createKeep() {
-      var _this3 = this;
+      var _this4 = this;
 
       // CREA UN NUEVO REGISTRO
       var url = 'tasks';
@@ -49808,19 +49870,23 @@ var app = new Vue({
         keep: this.newKeep // Enviamos la peticion
 
       }).then(function (response) {
-        _this3.getKeeps(); // Actualiza los registros
+        _this4.getKeeps(); // Actualiza los registros
 
 
-        _this3.newKeep = ''; // Resetea la variable
+        _this4.newKeep = ''; // Resetea la variable
 
-        _this3.errors = []; // Resetea los errores
+        _this4.errors = []; // Resetea los errores
 
         $('#create').modal('hide'); // Cierra la ventana
 
         toastr.success('Nueva tarea creada con exito'); // Envia mensaje notificando
       })["catch"](function (error) {
-        _this3.errors = error.response.data;
+        _this4.errors = error.response.data;
       });
+    },
+    changePage: function changePage(page) {
+      this.pagination.current_page = page;
+      this.getKeeps(page);
     }
   }
 });
@@ -49959,8 +50025,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\yo\Desktop\CRUD\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\Users\yo\Desktop\CRUD\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\laragon\www\crud\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\laragon\www\crud\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

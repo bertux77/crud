@@ -36,15 +36,52 @@ const app = new Vue({
     },
     data: {
         keeps: [],
+        pagination: {
+            'total': 0,
+            'current_page': 0,
+            'per_page': 0,
+            'last_page': 0,
+            'from': 0,
+            'to': 0,
+        },
         newKeep: '',
         fillKeep: { 'id': '', 'keep': '' },
-        errors: []
+        errors: [],
+        offset: 3, // numero de paginas a la derecha e izquierda, por ejemplo: 123[4]567sig
+    },
+    computed: {
+        isActived: function() {
+            return this.pagination.current_page;
+        },
+        pagesNumber: function() {
+            if (!this.pagination.to) {
+                return [];
+            }
+            let from = this.pagination.current_page - this.offset;
+            if (from < 1) {
+                from = 1;
+            }
+
+            let to = from + (this.offset * 2);
+            if (to >= this.pagination.last_page) {
+                to = this.pagination.last_page;
+            }
+
+            let pagesArray = [];
+            while (from <= to) {
+                pagesArray.push(from);
+                from++;
+            }
+            return pagesArray;
+        }
+
     },
     methods: {
-        getKeeps: function() { // TRAE TODOS LOS REGISTROS
-            let urlKeeps = 'tasks';
+        getKeeps: function(page) { // TRAE TODOS LOS REGISTROS
+            let urlKeeps = 'tasks?page=' + page;
             axios.get(urlKeeps).then(response => {
-                this.keeps = response.data
+                this.keeps = response.data.tasks.data,
+                    this.pagination = response.data.pagination
             });
         },
         editKeep: function(keep) { // EDITA EL KEEP ( TAREA )
@@ -52,8 +89,18 @@ const app = new Vue({
             this.fillKeep.keep = keep.keep; // LLenamos el campo tarea
             $('#edit').modal('show'); // Abrimos el formulario de edicion en ventana modal
         },
-        updateKeep: function(id) {
-            alert();
+        updateKeep: function(id) { // ACTUALIZAMOS
+            let url = 'tasks/' + id;
+            axios.put(url, this.fillKeep).then(response => { // Actualiza el registro en la BD
+                this.getKeeps(); // Actualiza la pantalla
+                this.fillKeep = { 'id': '', 'keep': '' }; // Reinicia el objeto
+                this.errors = []; // Reiniciamos los errores
+                $('#edit').modal('hide'); // Cerramos la ventana Modal
+                toastr.success('Tarea Actualizada correctamente')
+            }).catch(error => {
+                this.errors = error.response.data;
+            });
+
         },
         deleteKeep: function(keep) { // ELIMINA UN REGISTRO
             let url = 'tasks/' + keep.id
@@ -77,6 +124,10 @@ const app = new Vue({
             }).catch(error => {
                 this.errors = error.response.data
             });
+        },
+        changePage: function(page) {
+            this.pagination.current_page = page;
+            this.getKeeps(page);
         }
     }
 });
